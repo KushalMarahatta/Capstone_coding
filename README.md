@@ -11,3 +11,14 @@ This project analyzes ranking failures in supervised learning-to-rank systems. R
 
 ## Status
 Project initialized
+
+Phase A: Exploratory Data Analysis (Completed)
+The following steps have been completed:
+- Parsed LETOR-formatted data for Fold1
+- Verified query and document structure.
+- Analyzed label distributions and relevance sparsity
+- Identified queries with no relevant documents.
+- Examined feature distributions and detected zero-variance features
+- Visualized query difficulty, relevance density, and feature behavior
+
+NOTE: Several features were found to have zero variance across all documents. We left them alone for now and will be addressing them later.
