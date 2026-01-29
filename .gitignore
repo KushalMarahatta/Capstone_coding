@@ -1,0 +1,24 @@
+# ======================
+# Data outputs
+# ======================
+data/processed/
+*.csv
+
+# ======================
+# Jupyter notebook junk
+# ======================
+.ipynb_checkpoints/
+
+# ======================
+# Python cache / env
+# ======================
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# ======================
+# OS-specific
+# ======================
+.DS_Store
+Thumbs.db
