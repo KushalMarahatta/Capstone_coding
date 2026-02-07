@@ -63,7 +63,7 @@ The following steps have been completed:
     Precision@K
     NDCG@K (graded relevance)
     Failure@K
-- Evaluated metrics at K ∈ {1, 3, 5, 10}
+- Evaluated metrics at K = {1, 3, 5, 10}
 - Introduced conditional failure metrics:
     Failure@K | queries with at least one relevant document
     Failure@K | queries with at least one highly relevant document
@@ -83,7 +83,7 @@ NOTE: No hyperparameter tuning or advanced models were used in this phase. The f
 
 ********************************************************
 
-Phase 4: Feature Normalization & Robustness Analysis (In Progress)
+Phase 4: Feature Normalization & Robustness Analysis (Completed)
 
 The following steps have been completed:
 - Implemented a controlled normalization framework with three pipelines:
@@ -99,11 +99,11 @@ The following steps have been completed:
     Precision@K
     NDCG@K (graded relevance)
     Failure@K
-- Computed metrics for K ∈ {1, 3, 5, 10}
+- Computed metrics for K belonging to {1, 3, 5, 10}
 - Computed conditional failure metrics:
     Failure@K | queries with at least one relevant document
     Failure@K | queries with at least one highly relevant document
-- Separated primary relevance (label ≥ 1) and sensitivity relevance (label == 2) evaluations
+- Separated primary relevance (label >= 1) and sensitivity relevance (label == 2) evaluations
 - Ran all pipelines on:
     MQ2007 Fold1 (primary dataset)
     MQ2008 Fold1 (generalization check)
@@ -111,3 +111,25 @@ The following steps have been completed:
     Number of unique scores in top-K
     Number of tied scores in top-K
     Frequency of ties at the cutoff rank
+- Conducted K-sensitivity analysis to examine how Precision@K, NDCG@K, and Conditional Failure@K evolve as K increases
+- Performed score flatness analysis to compare score separation (range and standard deviation) between:
+    Successful queries
+    Avoidable failure queries
+- Implemented cross-dataset comparison (MQ2007 vs MQ2008) for Failure@K, Conditional Failure@K, and NDCG@K to assess generalization
+- Automatically determined pipeline “winners” based on objective criteria:
+    Minimum Conditional Failure@K
+    Maximum NDCG@K
+- Generated an evidence-based, reproducible Phase 4 summary consolidating:
+    Aggregate metrics
+    Tie behavior
+    Score flatness
+    Cross-dataset trends
+- Persisted all Phase 4 artifacts, including:
+    Query-level metrics
+    Aggregate comparisons (primary and sensitivity)
+    Diagnostic outputs (tie diagnostics, score flatness, K-sensitivity, cross-dataset comparison)
+    Trained models and predictions
+
+
+**********************************************************
+Phase 5
