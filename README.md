@@ -245,4 +245,49 @@ Phase 5: Query-level Failure Taxonomy and Diagnostic ANalysis (completed)
 
 ************************************************************
 
-Phase 6:
+Phase 6: Stronger LTR Models + Replication of Baseline Comparisons (Completed)
+
+
+The following steps have been completed:
+
+- Expanded the modeling layer from a single pointwise baseline to three model families:
+  - Pointwise (baseline logistic regression reference)
+  - Pairwise (rank-learning objective)
+  - LightGBM ranker (tree-based learning-to-rank)
+
+- Standardized evaluation across all model × pipeline combinations:
+  - Models: {pointwise, pairwise, lightgbm}
+  - Pipelines: {raw, global, per_query}
+  - Datasets: {MQ2007 Fold1, MQ2008 Fold1}
+
+- Enforced strict comparability rules:
+  - Same Fold1 split usage across MQ2007 and MQ2008 (train/test kept consistent)
+  - Same evaluation metrics and Failure@K definition as earlier phases
+  - No "hidden" changes to thresholds, relevance definitions, or K values across configs
+
+- Trained each model under each preprocessing pipeline:
+  - Raw: no feature scaling
+  - Global normalization: StandardScaler applied globally
+  - Per-query normalization: z-score normalization within each query group
+
+- Evaluated all configs using the same query-level metric outputs required for later phases:
+  - NDCG@5 (graded relevance)
+  - P@5_primary
+  - Failure@5_primary
+  - Plus required per-query metadata to support filtering and interpretability:
+    - num_relevant_1 (count of label ≥ 1 docs per query)
+    - (and any additional query diagnostics persisted from earlier phases where applicable)
+
+- Preserved the primary vs sensitivity evaluation convention:
+  - Primary relevance: label ≥ 1
+  - Sensitivity relevance: label == 2
+  - Saved sensitivity aggregates separately (when produced in Phase 6) to remain consistent with Phase 3–5 conventions.
+
+- Implemented robust metric safeguards carried forward from Phase 3–5:
+  - Metric definitions handle short queries using min(k, n_docs)
+  - relevance_threshold is validated explicitly (only valid values allowed)
+  - Tie-handling policy is made explicit and diagnostics are preserved where relevant
+
+- Produced Phase 6 artifacts in a “Phase 7-ready” format (no recomputation needed later):
+  - Query-level metrics are exported per config and dataset
+  - Outputs are deterministic and reproducible (stable naming + consistent schema)
