@@ -291,3 +291,72 @@ The following steps have been completed:
 - Produced Phase 6 artifacts in a “Phase 7-ready” format (no recomputation needed later):
   - Query-level metrics are exported per config and dataset
   - Outputs are deterministic and reproducible (stable naming + consistent schema)
+
+
+
+
+
+  *****************************************************************************************************
+
+
+  Phase 7: Statistical Significance & Comparative Inference (Completed)
+
+  The following steps have been completed:
+
+- Established a formal statistical testing framework to evaluate whether performance differences vs baseline are statistically significant
+
+- Used pointwise_raw as the explicit baseline reference for all comparisons
+
+- Conducted paired statistical tests for performance metrics:
+    Wilcoxon signed-rank test for NDCG@5 differences
+    Wilcoxon signed-rank test for Precision@5 differences
+    McNemar’s test for Failure@5 paired binary outcomes
+
+- Performed analysis separately for:
+    MQ2007 Fold1
+    MQ2008 Fold1 (generalization dataset)
+
+- Computed effect sizes alongside statistical tests:
+    Cliff’s delta for NDCG@5 and P@5
+    Risk difference for Failure@5
+
+- Calculated 95% confidence intervals:
+    Bootstrap CI for median differences (NDCG@5, P@5)
+    Confidence intervals for failure risk differences
+
+- Applied Benjamini–Hochberg False Discovery Rate (FDR) correction across multiple comparisons within each dataset
+
+- Explicitly separated:
+    Raw p-values (pval_raw)
+    FDR-adjusted q-values (qval_fdr)
+
+- Introduced effect size thresholds to avoid overclaiming statistical significance:
+    |Cliff’s δ| ≥ EFFECT_SMALL for NDCG and P@5
+    |risk_diff| ≥ FAILURE_EFFECT_SMALL for Failure@5
+
+- Defined a result as “supported” only if:
+    qval_fdr < FDR_ALPHA
+    AND effect size ≥ predefined threshold
+
+- Generated deterministic, sorted CSV artifacts for reproducibility:
+    phase7_stats_ndcg_vs_baseline.csv
+    phase7_stats_failure_vs_baseline.csv
+    phase7_stats_p5_vs_baseline.csv
+
+- Built structured JSON summary (phase7_summary.json) containing:
+    Best-performing configuration per dataset
+    Number of FDR-significant improvements per metric
+    Failure reduction summaries
+    Warning logs
+
+- Generated visual diagnostics for MQ2007:
+    Bar plots of median NDCG@5 difference with 95% CI
+    Bar plots of Failure@5 risk difference with 95% CI
+
+- Implemented generalization diagnostics across datasets:
+    Detected direction reversals (sign flips)
+    Identified configurations significant only in MQ2007 or only in MQ2008
+    Flagged potential generalization inconsistencies
+
+
+NOTE: Phase 7 did not introduce new models or feature engineering. The focus was on rigorous statistical validation of previously observed performance differences, controlling for multiple comparisons and enforcing effect-size-aware interpretation.
