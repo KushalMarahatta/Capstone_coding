@@ -360,3 +360,92 @@ The following steps have been completed:
 
 
 NOTE: Phase 7 did not introduce new models or feature engineering. The focus was on rigorous statistical validation of previously observed performance differences, controlling for multiple comparisons and enforcing effect-size-aware interpretation.
+
+
+
+
+*********************************************************************************************************************************
+
+
+************************************************************
+
+Phase 8: Structural Root-Cause Analysis of Persistent Failures (Completed)
+
+The following steps have been completed:
+
+- Transitioned from performance-level evaluation (Phase 7) to structural-level diagnosis of persistent ranking failures
+
+- Defined three disjoint query groups using Phase 6 artifacts (MQ2007 Fold1, baseline reference = pointwise_raw_2007):
+  - Persistent: queries failing in all 9 model x pipeline configs
+  - Non-persistent: queries failing in >=1 but not all configs
+  - Successful: queries never failing
+
+- Enforced strict analysis-only constraints:
+  - No retraining of models
+  - No regeneration of predictions
+  - No threshold or relevance-definition changes
+  - All analysis based exclusively on Phase 6 query-level artifacts + raw MQ2007 test features
+
+- Constructed structural diagnostics across multiple dimensions:
+  - Relevance sparsity (num_relevant_1, pct_num_rel_eq_1)
+  - Score separability (best relevant score - rank-5 score gap)
+  - Top-10 score dispersion (score_std_top10)
+  - Composite hardness index combining sparsity and dispersion
+  - Feature-level signal comparison (within-query variance and zero-percentage)
+
+- Implemented safe alignment checks between raw test features and prediction artifacts to prevent feature–score misalignment
+
+- Re-loaded raw MQ2007 Fold1 test features (f1-f46):
+  - Ensured missing feature columns are explicitly added as 0.0
+  - Dropped known zero-variance features identified in Phase 2
+  - Preserved deterministic feature ordering
+
+- Computed structural group summaries using the baseline configuration only to maintain interpretability consistency across phases
+
+- Developed multiple visualization diagnostics for structural interpretation:
+  - Relevance distribution comparisons
+  - Score gap distributions
+  - Hardness strip plots and density diagnostics
+  - Feature variance comparison tables
+
+- Established a formal structural significance testing framework:
+  - Mann–Whitney U tests for continuous structural metrics
+  - Chi-square or Fisher’s exact tests for categorical sparsity indicators
+  - Cliff’s delta for continuous effect sizes
+  - Risk difference for categorical metrics
+  - Bootstrap 95% confidence intervals for median and risk differences
+
+- Applied Benjamini–Hochberg FDR correction across all structural tests
+
+- Defined a structural result as “supported” only if:
+  - qval_fdr < FDR_ALPHA
+  - AND effect size >= predefined threshold (continuous or categorical)
+
+- Produced structural test artifacts:
+  - phase8_structural_tests.csv (full statistical table with q-values and support flags)
+
+- Generated a consolidated structural summary artifact:
+  - phase8_summary.json containing:
+    - Query group sizes
+    - Persistent proportions
+    - Mean score gap (persistent)
+    - Persistent sparsity percentage
+    - Hardness comparison
+    - Number of structural tests
+    - Number of supported findings
+    - List of supported structural metrics
+    - Warning logs
+
+- Identified supported structural drivers of persistent failures:
+  - Extremely low num_relevant_1
+  - High probability of exactly one relevant document
+  - Strong negative score_gap (poor separability near rank-5 boundary)
+
+- Confirmed that the following were NOT supported as consistent structural drivers:
+  - num_docs (query length)
+  - score_std_top10
+  - Composite hardness (as an independent separator)
+
+
+NOTE: Phase 8 does not introduce new models or alter evaluation criteria. Its purpose is to move beyond "which model performs better" and instead diagnose *why* certain queries fail persistently, using evidence-driven structural testing with multiple-comparison control and effect-size-aware interpretation.
+
