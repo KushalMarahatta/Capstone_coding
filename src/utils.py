@@ -62,7 +62,7 @@ def check_sample_size(group_name: str, count: int, min_size: int = 10, warnings_
     if warnings_issued is None:
         warnings_issued=[]
     if count < min_size:
-        msg=f'{group_name} has {count} samples (< {min_size}) → unstable'
+        msg=f'{group_name} has {count} samples (< {min_size}) -> unstable'
         print(f'{msg}')
         warnings_issued.append(msg)
 
