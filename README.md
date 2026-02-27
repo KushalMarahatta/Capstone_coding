@@ -449,3 +449,110 @@ The following steps have been completed:
 
 NOTE: Phase 8 does not introduce new models or alter evaluation criteria. Its purpose is to move beyond "which model performs better" and instead diagnose *why* certain queries fail persistently, using evidence-driven structural testing with multiple-comparison control and effect-size-aware interpretation.
 
+
+
+***************************************************************************
+
+Phase 9: Robustness & Generalization Validation (Completed)
+
+
+The following steps have been completed:
+
+- Validated whether key findings from Phases 6-8 remain stable under multiple robustness lenses, without retraining or altering any prior outputs
+
+- Enforced strict Phase 9 constraints:
+  - Used ONLY Phase 6 artifacts (query_metrics + predictions)
+  - No retraining, no new feature engineering, no post-hoc score changes
+  - No hidden changes to K values or relevance thresholds
+  - Deterministic outputs and stable file naming
+  - Association language only (no causal claims)
+
+- Performed Cross-Dataset Persistent Comparison (MQ2007 vs MQ2008):
+  - Recomputed persistent failures per dataset as:
+    - Persistent = intersection of failures across all 9 model x pipeline configs
+  - Preserved Phase 8 evaluability rule:
+    - evaluable = num_relevant_1 > 0
+  - Computed persistent rate summaries:
+    - pct_persistent_of_failing
+    - pct_persistent_of_evaluable
+  - Applied statistical test for rate difference:
+    - Chi-square if counts sufficient, otherwise Fisher exact
+  - Emitted small-sample stability warnings when persistent group sizes were < MIN_SAMPLE_WARNING
+  - Saved artifact:
+    - phase9_persistent_cross_dataset.csv
+
+- Conducted Threshold & K Sensitivity Analysis (Baseline-only):
+  - Tested whether failure behavior changes when evaluation conditions change, without changing model training
+  - Used baseline predictions only (pointwise_raw) per dataset
+  - Recomputed Failure@K using prediction scores under:
+    - K = {1, 3, 5, 10}
+    - relevance_threshold = {label >= 1, label == 2}
+  - Ensured robust evaluability handling:
+    - Queries with zero relevant docs at threshold are marked non-evaluable
+    - k_actual = min(k, n_docs) with safe guards for k <= 0
+  - Produced tabular outputs and sensitivity plots per dataset
+  - Saved artifacts:
+    - phase9_threshold_sensitivity.csv
+    - phase9_threshold_sensitivity_2007.png
+    - phase9_threshold_sensitivity_2008.png
+
+- Implemented Structural Replication Check (Phase 8 -> MQ2008):
+  - Purpose: test whether Phase 8’s supported structural signals from MQ2007 persist in MQ2008
+  - Loaded Phase 8 structural test list (phase8_structural_tests.csv) for transparency
+  - Defined MQ2008 query groups using the same Phase 8 logic:
+    - persistent = intersection across 9 configs (MQ2008)
+    - successful = evaluable - all_failing
+  - Prioritized replication of Phase 8-supported metrics:
+    - num_relevant_1
+    - pct_num_rel_eq_1
+  - Re-ran statistical comparisons in MQ2008:
+    - Mann–Whitney U for num_relevant_1
+    - Chi-square or Fisher exact for pct_num_rel_eq_1
+  - Applied BH-FDR correction over replication tests
+  - Saved artifact:
+    - phase9_structural_replication.csv
+
+- Performed Score Calibration Sanity Check (ranking scores, not probabilities):
+  - Verified whether higher normalized ranking scores correspond to higher observed relevance frequency
+  - Normalized scores per query using min-max scaling
+  - Binned normalized scores and computed:
+    - mean_predicted (average normalized score per bin)
+    - observed_frequency (relevance rate per bin using label ≥ 1)
+  - Computed ECE-style summary for interpretability (sanity indicator only)
+  - Generated reliability-style plots for MQ2007:
+    - Baseline model
+    - Best model (lightgbm_per_query) when available
+  - Saved artifacts:
+    - phase9_calibration_summary.csv
+    - phase9_calibration_baseline.png
+    - phase9_calibration_best_model.png
+
+- Tested Statistical Robustness Across K (Paired McNemar for binary Failure@K):
+  - Verified whether changes in Failure@K vs baseline remain stable when K changes
+  - Evaluated for K = {3, 10} under relevance_threshold = label >= 1
+  - Ensured paired alignment:
+    - Comparisons restricted to common evaluable qids between baseline and config
+  - Applied BH-FDR correction per (dataset, K)
+  - Corrected McNemar fallback logic:
+    - Used exact two-sided binomtest when statsmodels not available
+  - Added explicit McNemar direction label:
+    - improves if n10 > n01
+    - worsens if n01 > n10
+    - tie otherwise
+  - Saved artifact:
+    - phase9_statistical_robustness.csv
+
+- Produced consolidated Phase 9 artifacts (Phase 10-ready):
+  - CSV outputs:
+    - phase9_persistent_cross_dataset.csv
+    - phase9_threshold_sensitivity.csv
+    - phase9_structural_replication.csv
+    - phase9_calibration_summary.csv
+    - phase9_statistical_robustness.csv
+  - PNG outputs:
+    - phase9_threshold_sensitivity_2007.png
+    - phase9_threshold_sensitivity_2008.png
+    - phase9_calibration_baseline.png
+    - phase9_calibration_best_model.png
+
+NOTE: Phase 9 does not introduce new models or alter evaluation criteria. Its purpose is to verify whether earlier conclusions are robust to dataset shift (MQ2007 -> MQ2008), evaluation sensitivity (K and relevance thresholds), and paired binary stability across K, while explicitly handling small-sample limitations and enforcing transparent replication boundaries.
