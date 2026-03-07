@@ -556,3 +556,103 @@ The following steps have been completed:
     - phase9_calibration_best_model.png
 
 NOTE: Phase 9 does not introduce new models or alter evaluation criteria. Its purpose is to verify whether earlier conclusions are robust to dataset shift (MQ2007 -> MQ2008), evaluation sensitivity (K and relevance thresholds), and paired binary stability across K, while explicitly handling small-sample limitations and enforcing transparent replication boundaries.
+
+
+************************************************************
+
+Phase 10: Fold Robustness Validation (Completed)
+
+The following steps have been completed:
+
+- Verified whether the main findings of earlier phases remain stable when using different LETOR folds instead of relying only on Fold1
+
+- Created fold-aware Phase 6 artifacts without modifying earlier results:
+  - Re-ran the Phase 6 pipeline for MQ2007 Fold1, Fold2, and Fold3
+  - Saved artifacts in a new structure:
+    - phase6_models_folds/Fold1
+    - phase6_models_folds/Fold2
+    - phase6_models_folds/Fold3
+  - Preserved the original flat Phase 6 outputs so that Phases 7–9 remain unchanged
+
+- Enforced strict Phase 10 constraints:
+  - No retraining logic changes
+  - Same models and pipelines as Phase 6
+  - Same Failure@5 definition
+  - Same relevance rule (num_relevant_1 > 0 for evaluable queries)
+  - Same deterministic seed and preprocessing
+  - No feature engineering or parameter tuning
+
+- Implemented a fold-aware artifact loader:
+  - Loaded query_metrics and prediction files for each fold
+  - Required exactly 9 configs per fold (3 models × 3 pipelines)
+  - Validated required columns:
+    - qid
+    - num_docs
+    - num_relevant_1
+    - Failure@5_primary
+    - label
+    - score
+  - Added dtype coercion to avoid qid / score type mismatches
+  - Logged warnings if configs were missing
+
+- Computed baseline failure rates per fold using the baseline configuration (pointwise_raw):
+  - evaluable queries defined as num_relevant_1 > 0
+  - failure defined using Failure@5_primary
+  - Calculated:
+    - number of evaluable queries
+    - number of failures
+    - percentage failure rate
+  - Saved artifact:
+    - phase10_fold_failure_rates.csv
+
+- Identified persistent failures within each fold:
+  - persistent defined as intersection of failures across all 9 configs
+  - computed additional sets:
+    - all_failing = queries failing in at least one config
+    - successful = evaluable queries that never fail
+  - calculated fold summaries:
+    - n_evaluable
+    - n_failing
+    - n_persistent
+    - n_successful
+    - pct_persistent_of_failing
+    - pct_persistent_of_evaluable
+  - emitted warnings when sample sizes were small
+  - saved artifact:
+    - phase10_fold_persistent_summary.csv
+
+- Performed structural direction validation across folds:
+  - tested whether the structural signals discovered in Phase 8 Fold1 still point in the same direction
+  - compared persistent vs successful queries using baseline artifacts
+  - evaluated three structural signals:
+    - num_relevant_1
+    - sparsity (pct_num_rel_eq_1)
+    - score_gap (best relevant score − rank-5 score)
+  - applied statistical tests:
+    - Mann–Whitney U for numeric metrics
+    - Chi-square or Fisher exact for sparsity
+  - recorded whether the direction matched the expected structural pattern
+  - saved artifact:
+    - phase10_fold_structural_direction.csv
+
+- Conducted model direction validation (LightGBM vs baseline):
+  - compared failure rates of:
+    - baseline: pointwise_raw
+    - stronger model: lightgbm_per_query
+  - restricted comparison to common evaluable qids to ensure fair alignment
+  - computed failure percentages for both models on the same query set
+  - recorded whether LightGBM reduced failures relative to baseline
+  - saved artifact:
+    - phase10_fold_model_direction.csv
+
+- Generated a consolidated Phase 10 experiment summary:
+  - aggregated fold-level findings including:
+    - baseline failure rates
+    - persistent failure rates
+    - structural direction consistency
+    - number of tests performed
+    - warning logs
+  - saved artifact:
+    - phase10_summary.json
+
+NOTE: Phase 10 does not introduce new models or modify evaluation criteria. Its purpose is to check whether the key patterns discovered earlier (failure rates, persistent queries, and structural signals) remain stable when the experiment is repeated across multiple folds. This helps confirm that the findings are not just an artifact of one particular data split.
