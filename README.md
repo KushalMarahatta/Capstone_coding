@@ -656,3 +656,114 @@ The following steps have been completed:
     - phase10_summary.json
 
 NOTE: Phase 10 does not introduce new models or modify evaluation criteria. Its purpose is to check whether the key patterns discovered earlier (failure rates, persistent queries, and structural signals) remain stable when the experiment is repeated across multiple folds. This helps confirm that the findings are not just an artifact of one particular data split.
+
+
+
+
+************************************************************
+
+Phase 11: Query-Level Failure Case Studies (Completed)
+
+The following steps have been completed:
+
+- Transitioned from statistical and robustness analysis (Phases 8–10) to concrete, query-level illustrations of ranking failures
+
+- Enforced strict Phase 11 constraints:
+  - Used ONLY Phase 6 artifacts (query_metrics + predictions)
+  - Used persistent queries defined in Phase 10 (no redefinition)
+  - No retraining, no model changes, no feature engineering
+  - No changes to evaluation metrics or thresholds
+  - Illustration only (no new statistical claims)
+  - Used association-based, non-causal language
+
+- Loaded fold-aware Phase 6 baseline artifacts:
+  - Source: phase6_models_folds/Fold1
+  - Baseline configuration: pointwise_raw_2007
+  - Validated required columns:
+    - qid
+    - num_relevant_1
+    - Failure@5_primary
+    - label
+    - score
+
+- Reconstructed persistent query set using Phase 10 definition:
+  - Loaded all 9 model × pipeline configurations (Fold1)
+  - Computed evaluable queries per config:
+    - evaluable = num_relevant_1 > 0
+  - Computed failure sets per config:
+    - Failure@5_primary -> binary fail flag
+  - Derived persistent queries as:
+    - persistent = intersection of failures across all 9 configs
+  - Ensured consistency with Phase 10 logic and definitions
+
+- Selected representative case study queries using structural criteria:
+  - Filtered persistent queries with:
+    - num_relevant_1 = 1 (extreme sparsity)
+    - score_gap <= 0.02 (weak score separation)
+  - Sorted candidates by score_gap (most negative first)
+  - Selected top N examples for illustration (default: 3 queries)
+  - Ensured selected queries reflect structural patterns identified in Phase 8
+
+- Computed query-level diagnostic metrics:
+  - Relevance sparsity (num_relevant_1)
+  - Failure status (Failure@5_primary)
+  - Score gap:
+    - best relevant score - score at rank 5
+  - Ranking positions of relevant documents
+
+- Generated detailed ranking summaries:
+  - Extracted top-10 ranked documents per query
+  - Computed:
+    - rank positions
+    - relevance labels
+    - binary relevance flags
+  - Identified positions of relevant documents within top-10
+  - Saved artifacts:
+    - phase11_case_study_queries.csv
+    - phase11_case_study_rankings.csv
+
+- Created query-level visualization diagnostics:
+  - Scatter plots of ranking scores vs rank position
+  - Highlighted:
+    - relevant documents (distinct markers)
+    - non-relevant documents
+    - rank-5 cutoff boundary
+  - Annotated relevant document positions for interpretability
+  - Visualized score separation and near-miss failures
+  - Saved artifacts:
+    - phase11_case_study_plot_qid_*.png (one per query)
+
+- Generated structured narrative summaries:
+  - Described each query in terms of:
+    - sparsity (num_relevant_1)
+    - score_gap behavior
+    - ranking positions of relevant documents
+  - Highlighted structural patterns:
+    - extreme sparsity (single relevant document)
+    - weak score separation
+    - near-miss failures below rank-5 cutoff
+  - Connected observations to Phase 8 findings
+  - Used illustrative (non-causal) language throughout
+  - Saved artifact:
+    - phase11_case_study_summary.txt
+
+- Performed case study representativeness check:
+  - Compared selected example queries with full persistent query set
+  - Evaluated:
+    - median num_relevant_1
+    - median score_gap
+  - Verified that selected queries reflect overall persistent distribution
+  - Saved artifact:
+    - phase11_case_study_representativeness.csv
+
+- Produced final Phase 11 outputs:
+  - CSV outputs:
+    - phase11_case_study_queries.csv
+    - phase11_case_study_rankings.csv
+    - phase11_case_study_representativeness.csv
+  - PNG outputs:
+    - phase11_case_study_plot_qid_*.png
+  - TXT output:
+    - phase11_case_study_summary.txt
+
+NOTE: Phase 11 does not introduce new models or statistical tests. Its purpose is to visually and concretely illustrate the structural failure patterns identified in earlier phases, making the results more interpretable and suitable for presentation. It complements Phases 8-10 by demonstrating how extreme relevance sparsity and weak score separation manifest in real ranking outputs.
