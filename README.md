@@ -767,3 +767,105 @@ The following steps have been completed:
     - phase11_case_study_summary.txt
 
 NOTE: Phase 11 does not introduce new models or statistical tests. Its purpose is to visually and concretely illustrate the structural failure patterns identified in earlier phases, making the results more interpretable and suitable for presentation. It complements Phases 8-10 by demonstrating how extreme relevance sparsity and weak score separation manifest in real ranking outputs.
+
+
+
+
+************************************************************
+
+Phase 12: Synthetic Stress Test for Relevance Sparsity (Completed)
+
+The following steps have been completed:
+
+- Added a final controlled extension to the project to examine whether ranking failure risk rises when relevance redundancy is artificially reduced
+
+- Enforced strict Phase 12 constraints:
+  - Used ONLY Phase 6 baseline artifacts
+  - Used MQ2007 Fold1 only
+  - Used baseline configuration only:
+    - pointwise_raw_2007
+  - No retraining
+  - No score changes
+  - No new models
+  - No feature engineering
+  - No new datasets
+  - No threshold changes
+  - Preserved the same Failure@5 logic used in earlier phases
+
+- Loaded fold-aware baseline artifacts from:
+  - phase6_models_folds/Fold1
+  - Required files:
+    - pointwise_raw_2007_query_metrics.csv
+    - pointwise_raw_2007_predictions.csv
+
+- Validated required columns before simulation:
+  - query_metrics:
+    - qid
+    - num_relevant_1
+    - Failure@5_primary
+  - predictions:
+    - qid
+    - label
+    - score
+
+- Preserved the earlier evaluability rule:
+  - evaluable query = num_relevant_1 > 0
+
+- Designed a controlled Monte Carlo style sparsity stress test with the following conditions:
+  - original
+  - cap_rel_3
+  - cap_rel_2
+  - cap_rel_1
+
+- Kept original ranking scores unchanged for all queries and all stress conditions
+
+- Artificially reduced relevance redundancy within each query by:
+  - identifying relevant documents using label >= 1
+  - randomly keeping only up to the allowed number of relevant documents
+  - converting the remaining relevant documents to non-relevant (label = 0)
+
+- Recomputed query-level Failure@5 after each synthetic sparsity modification:
+  - success = at least one relevant document in top 5
+  - failure = no relevant document in top 5
+  - non-evaluable = no relevant documents remain
+
+- Repeated the synthetic stress test over multiple random repetitions to reduce dependence on one random cap realization
+
+- Aggregated results across repetitions for each sparsity level and computed:
+  - n_evaluable
+  - n_failures
+  - mean failure rate
+  - standard deviation of failure rate
+  - mean failure percentage
+  - delta vs original (percentage-point change)
+
+- Preserved the intended sparsity ordering for interpretation and visualization:
+  - original -> cap_rel_3 -> cap_rel_2 -> cap_rel_1
+
+- Added consistency checks for evaluable query counts across stress levels and emitted warnings if n_evaluable changed
+
+- Generated a summary table of synthetic stress test results and saved artifact:
+  - phase12_sparsity_stress_summary.csv
+
+- Created a visualization of Failure@5 rate under increasing synthetic sparsity with error bars across repetitions
+  - Saved artifact:
+    - phase12_sparsity_stress_plot.png
+
+- Produced a final narrative summary connecting the synthetic stress test back to earlier structural findings on:
+  - low num_relevant_1
+  - relevance sparsity
+  - failure risk near the rank-5 boundary
+
+- Framed Phase 12 carefully as:
+  - a controlled illustration
+  - a mechanistic support exercise
+  - consistent with earlier findings
+  - not a causal proof
+
+- Produced final Phase 12 outputs:
+  - CSV output:
+    - phase12_sparsity_stress_summary.csv
+  - PNG output:
+    - phase12_sparsity_stress_plot.png
+
+NOTE: Phase 12 does not introduce new models or new statistical claims. Its purpose is to provide a small controlled demonstration showing that when relevance redundancy is artificially reduced while scores remain unchanged, Failure@5 often rises. This makes the earlier structural sparsity findings more concrete, but it should still be interpreted as illustrative rather than causal proof.
